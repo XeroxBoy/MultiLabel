@@ -92,7 +92,10 @@ class DFAFilter:
             else:
                 pass
             start += 1
-        un_normal_rate = un_normal_length / all_length
+        if all_length != 0:
+            un_normal_rate = un_normal_length / all_length
+        else:
+            un_normal_rate = 0
         # if un_normal_rate > 0.1:
         #     self.num_10_count += 1
         # if un_normal_rate > 0.2:
@@ -132,13 +135,10 @@ if __name__ == "__main__":
             is_kw_normal = gfw.isNormalFilter(keywords)
             is_des_normal = gfw.isNormalFilter(description)
             if not is_kw_normal and not is_des_normal:
-                # print("不正常描述："+description + " 不正常key: "+keywords)
                 both_un_normal_count += 1
             if not is_kw_normal:
-                print("不正常key: "+keywords)
                 kw_un_normal_count += 1
             if not is_des_normal:
-                # print("不正常描述："+description)
                 des_un_normal_count += 1
     # print("高于0.10的有: " + str(gfw.num_10_count))
     print("高于0.10的有: " + str(gfw.num_15_count))
