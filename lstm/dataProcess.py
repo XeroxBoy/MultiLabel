@@ -37,6 +37,15 @@ def stopwordslist(filepath):
     return stopwords
 
 
+def predict(text):
+    txt = remove_punctuation(text)
+    txt = [" ".join([w for w in list(jb.cut(txt)) if w not in stopwords])]
+    seq = tokenizer.texts_to_sequences(txt)
+    padded = sequence.pad_sequences(seq, maxlen=MAx_SEQUENCE_LENGTH)
+    pred = model.predict(padded)
+    first_level_id= pred.argmax(axis=1)[0]
+    return first_level_id_df[first_level_id_df.first_level_id==first_level_id]['first_level'].values[0]
+
 # 加载停用词
 stopwords = stopwordslist("../StopWord.txt")
 
@@ -105,17 +114,17 @@ print(y.shape)
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.10, random_state=42)
 print(x_train.shape, y_train.shape)
 print(x_test.shape, y_test.shape)
-y_train = y_train.values.reshape(y_train.shape[0])
-y_test = y_test.values.reshape(y_test.shape[0])
-y_train = keras.utils.to_categorical(y_train, 7)
-y_test = keras.utils.to_categorical(y_test, 7)
+# y_train = y_train.values.reshape(y_train.shape[0])
+# y_test = y_test.values.reshape(y_test.shape[0])
+# y_train = keras.utils.to_categorical(y_train, 7)
+# y_test = keras.utils.to_categorical(y_test, 7)
 
 # 定义模型
 model = Sequential()
 model.add(Embedding(MAx_NB_WORDS, EMBEDDING_DIM, input_length=x.shape[1]))
 model.add(SpatialDropout1D(0.2))
 model.add(LSTM(100, dropout=0.2, recurrent_dropout=0.2))
-model.add(Dense(10, activation='softmax'))
+model.add(Dense(7, activation='softmax'))
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 print(model.summary())
 
