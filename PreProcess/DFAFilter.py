@@ -3,12 +3,18 @@
 import time
 
 # from pybloomfilter import BloomFilter
+import pymysql
 
 time1 = time.time()
 
 
 # DFA算法
 class DFAFilter:
+    num_20_count = 0
+    num_25_count = 0
+    num_15_count = 0
+    num_10_count = 0
+
     def __init__(self):
         self.keyword_chains = {}
         self.delimit = '\x00'
@@ -67,6 +73,8 @@ class DFAFilter:
 
     def isNormalFilter(self, message):
         message = message.lower()
+        all_length = len(message)
+        un_normal_length = 0
         start = 0
         while start < len(message):
             level = self.keyword_chains
@@ -77,24 +85,68 @@ class DFAFilter:
                     if self.delimit not in level[char]:
                         level = level[char]
                     else:
+                        un_normal_length += 1
                         start += step_ins - 1
-                        return False
                 else:
                     break
             else:
-                return True
+                pass
             start += 1
-        return True
+        un_normal_rate = un_normal_length / all_length
+        # if un_normal_rate > 0.1:
+        #     self.num_10_count += 1
+        # if un_normal_rate > 0.2:
+        #     self.num_20_count += 1
+        # if un_normal_rate > 0.25:
+        #     self.num_25_count += 1
+        if un_normal_rate > 0.10:
+            self.num_10_count += 1
+            return False
+        else:
+            return True
 
 
 if __name__ == "__main__":
+    db_info = {}
+    db = pymysql.connect(host=db_info['host'], port=db_info['port'], user=db_info['user'], passwd=db_info['passwd'],
+                         db=db_info['dbname'])
+    c = db.cursor()
     gfw = DFAFilter()
     path = "../UnNormal.txt"
     gfw.parse(path)
-    text = '曰本真人性做爰在线观看_免费人做人爱的视频_免费观看-女人天堂'
-    result = gfw.isNormalFilter(text)
-
-    print(text)
-    print(result)
-    time2 = time.time()
-    print('总共耗时：' + str(time2 - time1) + 's')
+    sql = """select description,keywords from domain_headers where description != "" and keywords != "" """
+    c.execute(sql)
+    data = c.fetchall()
+    data_length = len(data)
+    kw_un_normal_count = 0
+    des_un_normal_count = 0
+    both_un_normal_count = 0
+    # for i in range(len(data)):
+    #     description = data[i][0]
+    #     if description != "":
+    #         gfw.isNormalFilter(description)
+    for i in range(len(data)):
+        description = data[i][0]
+        keywords = data[i][1]
+        if keywords != "":
+            is_kw_normal = gfw.isNormalFilter(keywords)
+            is_des_normal = gfw.isNormalFilter(description)
+            if not is_kw_normal and not is_des_normal:
+                # print("不正常描述："+description + " 不正常key: "+keywords)
+                both_un_normal_count += 1
+            if not is_kw_normal:
+                print("不正常key: "+keywords)
+                kw_un_normal_count += 1
+            if not is_des_normal:
+                # print("不正常描述："+description)
+                des_un_normal_count += 1
+    # print("高于0.10的有: " + str(gfw.num_10_count))
+    print("高于0.10的有: " + str(gfw.num_15_count))
+    # print("高于0.20的有: " + str(gfw.num_20_count))
+    # print("高于0.25的有: " + str(gfw.num_25_count))
+    print("总数据有:" + str(data_length))
+    print("keywords不正常数有: " + str(kw_un_normal_count))
+    print("description不正常数有: " + str(kw_un_normal_count))
+    print("两样都不正常数有: " + str(both_un_normal_count))
+    # print(text)
+    # print(result)
