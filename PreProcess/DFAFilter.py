@@ -2,13 +2,13 @@
 
 import time
 
-from pybloomfilter import BloomFilter
+# from pybloomfilter import BloomFilter
 
 time1 = time.time()
 
 
 # DFA算法
-class DFAFilter():
+class DFAFilter:
     def __init__(self):
         self.keyword_chains = {}
         self.delimit = '\x00'
@@ -38,6 +38,7 @@ class DFAFilter():
         with open(path, encoding='utf-8') as f:
             for keyword in f:
                 self.add(str(keyword).strip())
+        f.close()
 
     def filter(self, message, repl="*"):
         message = message.lower()
@@ -64,20 +65,34 @@ class DFAFilter():
 
         return ''.join(ret)
 
-    def bloomFilter(self, text):
-        bffilter = BloomFilter(1000000, 0.001, 'bf_test.bloom')
-        level = self.keyword_chains
-        if text in level:
-            return True
-        return False
+    def isNormalFilter(self, message):
+        message = message.lower()
+        start = 0
+        while start < len(message):
+            level = self.keyword_chains
+            step_ins = 0
+            for char in message[start:]:
+                if char in level:
+                    step_ins += 1
+                    if self.delimit not in level[char]:
+                        level = level[char]
+                    else:
+                        start += step_ins - 1
+                        return False
+                else:
+                    break
+            else:
+                return True
+            start += 1
+        return True
 
 
 if __name__ == "__main__":
     gfw = DFAFilter()
-    path = "F:/文本反垃圾算法/sensitive_words.txt"
+    path = "../UnNormal.txt"
     gfw.parse(path)
-    text = "新疆骚乱苹果新品发布会雞八"
-    result = gfw.filter(text)
+    text = '曰本真人性做爰在线观看_免费人做人爱的视频_免费观看-女人天堂'
+    result = gfw.isNormalFilter(text)
 
     print(text)
     print(result)
