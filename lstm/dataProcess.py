@@ -43,8 +43,9 @@ def predict(text):
     seq = tokenizer.texts_to_sequences(txt)
     padded = sequence.pad_sequences(seq, maxlen=MAx_SEQUENCE_LENGTH)
     pred = model.predict(padded)
-    first_level_id= pred.argmax(axis=1)[0]
-    return first_level_id_df[first_level_id_df.first_level_id==first_level_id]['first_level'].values[0]
+    first_level_id = pred.argmax(axis=1)[0]
+    return first_level_id_df[first_level_id_df.first_level_id == first_level_id]['first_level'].values[0]
+
 
 # 加载停用词
 stopwords = stopwordslist("../StopWord.txt")
@@ -122,10 +123,13 @@ print(x_test.shape, y_test.shape)
 # 定义模型
 model = Sequential()
 model.add(Embedding(MAx_NB_WORDS, EMBEDDING_DIM, input_length=x.shape[1]))
-model.add(SpatialDropout1D(0.2))
-model.add(LSTM(100, dropout=0.2, recurrent_dropout=0.2))
-model.add(Dense(7, activation='softmax'))
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.add(SpatialDropout1D(0.4))
+model.add(LSTM(100, dropout=0.4, recurrent_dropout=0.4))
+# model.add(Dense(7, activation='softmax'))
+# model.add(Dense(32, activation='sigmoid'))
+# model.add(Dense(16, activation='sigmoid'))
+model.add(Dense(7, activation='sigmoid'))
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 print(model.summary())
 
 # 训练数据

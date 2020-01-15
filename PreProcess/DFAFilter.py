@@ -110,7 +110,7 @@ class DFAFilter:
 
 
 if __name__ == "__main__":
-    db_info = {}
+    db_info = {'host': '10.0.3.11', 'port': 3306, 'user': 'root', 'passwd': 'Ntci@85418825', 'dbname': 'sx'}
     db = pymysql.connect(host=db_info['host'], port=db_info['port'], user=db_info['user'], passwd=db_info['passwd'],
                          db=db_info['dbname'])
     c = db.cursor()
