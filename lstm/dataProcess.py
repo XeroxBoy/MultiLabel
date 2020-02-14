@@ -12,12 +12,11 @@ from pylab import mpl
 import jieba as jb
 from sklearn.model_selection import train_test_split
 import re
-
 from tensorflow import keras
 
 MAx_NB_WORDS = 50000
 MAx_SEQUENCE_LENGTH = 250
-EMBEDDING_DIM = 100
+EMBEDDING_DIM = 128
 
 mpl.rcParams['font.sans-serif'] = ['SimHei']
 
@@ -124,7 +123,7 @@ print(x_test.shape, y_test.shape)
 model = Sequential()
 model.add(Embedding(MAx_NB_WORDS, EMBEDDING_DIM, input_length=x.shape[1]))
 model.add(SpatialDropout1D(0.4))
-model.add(LSTM(100, dropout=0.4, recurrent_dropout=0.4))
+model.add(LSTM(64, dropout=0.4, recurrent_dropout=0.4))
 # model.add(Dense(7, activation='softmax'))
 # model.add(Dense(32, activation='sigmoid'))
 # model.add(Dense(16, activation='sigmoid'))
